@@ -1,15 +1,28 @@
-name: Publish Docker Container
+name: C Pipeline (CI/CD)
 
-# Run only when a push happens directly on the main branch
 on:
   push:
     branches: [ main ]
 
 jobs:
+  # Job 1: CI — the program must compile cleanly and run without crashing
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Compile (warnings count as errors)
+        run: gcc -Wall -Wextra -Werror test.c -o test
+
+      - name: Run program
+        run: ./test
+
+  # Job 2: CD — runs ONLY if "test" passed
   build-and-push:
+    needs: test
     runs-on: ubuntu-latest
 
-    # Grant write permissions to the virtual machine for the repository's Packages section
     permissions:
       contents: read
       packages: write
@@ -18,7 +31,6 @@ jobs:
       - name: Checkout repository code
         uses: actions/checkout@v4
 
-      # Log in to the GitHub Container Registry (ghcr.io)
       - name: Authenticate with GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -26,7 +38,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Builds the image using the Dockerfile and pushes it to GitHub
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:

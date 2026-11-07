@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-int main(){
-    printf("Uite, compilez\n");
+int main() {
+  printf("Uite, compilez\n");
 
-    return 0;
+  return 0;
 }
